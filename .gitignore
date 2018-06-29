@@ -1,0 +1,10 @@
+node_modules
+
+backend/go/pkg/*
+backend/go/src/*
+!backend/go/src/server
+*.pb.go
+
+web/proto
+
+.vscode

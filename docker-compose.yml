@@ -1,0 +1,25 @@
+version: '2'
+services:
+  web:
+    container_name: web
+    build:
+      context: web
+    ports:
+      - "8000:80"
+  backend:
+    container_name: backend
+    build:
+      context: backend
+    expose:
+      - "9091"
+  proxy:
+    container_name: proxy
+    build:
+      context: proxy
+    volumes:
+      - ./proxy/config.yaml:/etc/envoy/config.yaml
+    ports:
+      - "9090:9090"
+    links:
+      - web
+      - backend

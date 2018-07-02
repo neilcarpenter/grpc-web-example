@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>gRPC-web test - echo service</title>
+    <link rel="stylesheet" href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
+    <style>
+        body {
+            width: 500px;
+            margin: 0 auto;
+        }
+
+        #echo .mdc-text-field {
+            width: 100%;
+        }
+
+        #message-log {
+            margin-top: 50px;
+        }
+
+        .message[dir="rtl"] {
+            text-align: right;
+        }
+    </style>
+</head>
+<body class="mdc-typography">
+    <h1 class="mdc-typography--headline3">gRPC-web <code>echo</code></h1>
+    <form action="#" id="echo">
+        <div class="mdc-text-field" data-mdc-auto-init="MDCTextField">
+            <input type="text" id="message" class="mdc-text-field__input">
+            <label class="mdc-floating-label" for="message">Enter message to echo</label>
+            <div class="mdc-line-ripple"></div>
+        </div>
+    </form>
+    <ul class="mdc-list mdc-list--two-line" aria-orientation="vertical" id="message-log"></ul>
+
+    <script src="js/compiled.js"></script>
+    <script>
+        function onFormSubmit(e) {
+            e.preventDefault();
+
+            var unaryRequest = new proto.grpc.web.research.EchoRequest();
+            var input = document.getElementById('message');
+            var message = input.value;
+            input.value = '';
+
+            addMessage(message);
+
+            var start = Date.now();
+            unaryRequest.setMessage(message);
+            window.echoServiceClient.echo(unaryRequest, null, function(err, response) {
+                if (err) {
+                    console.error('Error code: ' + err.code + ' "' + err.message + '"');
+                } else {
+                    var latency = Date.now() - start;
+                    addMessage(response.getMessage(), true, latency);
+                }
+            });
+        }
+
+        function addMessage(message, echo, latency) {
+            var messageHTML = `
+                <li class="mdc-list-item message mdc-theme--${echo ? 'primary' : 'secondary'}" ${echo ? 'dir="rtl"' : ''}>
+                    <span class="mdc-list-item__graphic material-icons" aria-hidden="true">
+                        ${echo ? 'arrow_back' : 'arrow_forward'}
+                    </span>
+                    <span class="mdc-list-item__text">
+                        ${message}
+                        <span class="mdc-list-item__secondary-text">
+                            ${latency ? `Latency: ${latency}ms` : ''}
+                        </span>
+                    </span>
+                </li>
+            `;
+
+            document.getElementById('message-log').innerHTML += messageHTML;
+        }
+
+        window.mdc.autoInit();
+        window.echoServiceClient = new proto.grpc.web.research.EchoServiceClient(
+            'http://' + window.location.hostname + ':9090'
+        );
+        document.getElementById('echo').addEventListener('submit', onFormSubmit, false);
+    </script>
+</body>
+</html>

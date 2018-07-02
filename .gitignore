@@ -1,10 +1,12 @@
 node_modules
 
+backend/go/bin/*
 backend/go/pkg/*
 backend/go/src/*
 !backend/go/src/server
 *.pb.go
 
-web/proto
+web/src/proto
+web/dist/js
 
 .vscode

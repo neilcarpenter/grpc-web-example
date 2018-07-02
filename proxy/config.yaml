@@ -37,7 +37,7 @@ static_resources:
                   cluster: local_service_grpc
                   cors:
                       allow_origin: ["*"]
-                      allow_headers: content-type,x-grpc-web
+                      allow_headers: content-type,x-grpc-web,x-user-agent
             response_headers_to_add:
               header:
                 key: Access-Control-Expose-Headers
@@ -47,9 +47,7 @@ static_resources:
           - name: envoy.cors
           - name: envoy.grpc_web
           - name: envoy.grpc_http1_bridge
-            config: {}
           - name: envoy.router
-            config: {}
   clusters:
   - name: local_service_grpc
     type: logical_dns

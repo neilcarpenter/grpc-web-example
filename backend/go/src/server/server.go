@@ -8,6 +8,8 @@ import (
 	"net"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	example "proto/example"
 )
@@ -34,6 +36,10 @@ func main() {
 type echoService struct{}
 
 func (s *echoService) Echo(ctx context.Context, in *example.EchoRequest) (*example.EchoResponse, error) {
+	if in.Message == "error" {
+		return nil, status.Error(codes.Internal, "Example error response")
+	}
+
 	return &example.EchoResponse{
 		Message: in.Message,
 	}, nil

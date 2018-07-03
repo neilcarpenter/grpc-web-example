@@ -1,8 +1,8 @@
 export GOPATH := ${CURDIR}/backend/go
 
-GRPC_WEB_REPO_PATH := /Users/neilcarpenter/Sites/_misc/grpc-web
-GRPC_WEB_PLUGIN_PATH := /Users/neilcarpenter/Sites/_misc/grpc-web/javascript/net/grpc/web/protoc-gen-grpc-web
-CLOSURE_COMPILER_PATH := /Users/neilcarpenter/lib/closure-compiler/closure-compiler.jar
+GRPC_WEB_REPO_PATH := /add/path/here
+GRPC_WEB_PLUGIN_PATH := /add/path/here
+CLOSURE_COMPILER_PATH := /add/path/here
 
 all: proto compile-js
 

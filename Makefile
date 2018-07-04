@@ -27,3 +27,6 @@ compile-js:
 		--entry_point=goog:proto.grpc.web.research.EchoServiceClient \
 		--dependency_mode=STRICT \
 		--js_output_file ./web/dist/js/compiled.js
+
+clean-js:
+	rm -rf ${CURDIR}/web/src/proto

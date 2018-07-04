@@ -54,12 +54,14 @@
             var start = Date.now();
             unaryRequest.setMessage(message);
             window.echoServiceClient.echo(unaryRequest, null, function(err, response) {
+                var latency = Date.now() - start;
+                var message;
                 if (err) {
-                    console.error('Error code: ' + err.code + ' "' + err.message + '"');
+                    message = `<strong>Error ${err.code}</strong>: ${err.message}`;
                 } else {
-                    var latency = Date.now() - start;
-                    addMessage(response.getMessage(), true, latency);
+                    message = response.getMessage();
                 }
+                addMessage(message, true, latency);
             });
         }
 

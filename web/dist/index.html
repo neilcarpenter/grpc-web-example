@@ -14,7 +14,7 @@
             margin: 0 auto;
         }
 
-        #echo .mdc-text-field {
+        .mdc-text-field {
             width: 100%;
         }
 
@@ -30,24 +30,32 @@
 <body class="mdc-typography">
     <h1 class="mdc-typography--headline3">gRPC-web <code>echo</code></h1>
     <p class="mdc-typography--body1">Enter message to echo, or type "error" to simulate error</p>
-    <form action="#" id="echo">
-        <div class="mdc-text-field" data-mdc-auto-init="MDCTextField">
-            <input type="text" id="message" class="mdc-text-field__input">
-            <label class="mdc-floating-label" for="message">Type message and hit enter</label>
-            <div class="mdc-line-ripple"></div>
-        </div>
-    </form>
+    <div class="mdc-text-field" data-mdc-auto-init="MDCTextField">
+        <input type="text" id="message" class="mdc-text-field__input">
+        <label class="mdc-floating-label" for="message">Type message and click echo option below</label>
+        <div class="mdc-line-ripple"></div>
+    </div>
+    <button class="mdc-button mdc-button--raised" data-mdc-auto-init="MDCRipple" id="echo-button">
+        <i class="material-icons mdc-button__icon" aria-hidden="true">hearing</i>
+        Echo
+    </button>
+    <button class="mdc-button mdc-button--raised" data-mdc-auto-init="MDCRipple" id="echo-stream-button">
+        <i class="material-icons mdc-button__icon" aria-hidden="true">hearing</i>
+        <i class="material-icons mdc-button__icon" aria-hidden="true">hearing</i>
+        <i class="material-icons mdc-button__icon" aria-hidden="true">hearing</i>
+        Echo stream
+    </button>
     <ul class="mdc-list mdc-list--two-line" aria-orientation="vertical" id="message-log"></ul>
 
     <script src="js/compiled.js"></script>
     <script>
-        function onFormSubmit(e) {
-            e.preventDefault();
-
+        function onEchoClick() {
             var unaryRequest = new proto.grpc.web.research.EchoRequest();
             var input = document.getElementById('message');
             var message = input.value;
             input.value = '';
+
+            if (message === '') return;
 
             addMessage(message);
 
@@ -65,6 +73,41 @@
             });
         }
 
+        function onEchoStreamClick() {
+            var streamRequest = new proto.grpc.web.research.ServerStreamingEchoRequest();
+            var input = document.getElementById('message');
+            var message = input.value;
+            input.value = '';
+
+            if (message === '') return;
+
+            addMessage(message)
+
+            streamRequest.setMessage(message);
+            streamRequest.setMessageCount(5);
+            streamRequest.setMessageInterval(200);
+            var stream = window.echoServiceClient.serverStreamingEcho(streamRequest, null);
+            var lastTime = Date.now();
+            stream.on('data', function(response) {
+                var now = Date.now();
+                var latency = now - lastTime;
+                lastTime = now;
+                addMessage(response.getMessage(), true, latency);
+            });
+            stream.on('status', function(status) {
+                if (status.code != grpc.web.StatusCode.OK) {
+                    addMessage(`<strong>Error ${err.code}</strong>: ${err.message}`, true)
+                }
+                if (status.metadata) {
+                    console.log("Received metadata");
+                    console.log(status.metadata);
+                }
+            });
+            stream.on('end', function() {
+                console.log("stream end signal received");
+            });
+        }
+
         function addMessage(message, echo, latency) {
             var messageHTML = `
                 <li class="mdc-list-item message mdc-theme--${echo ? 'primary' : 'secondary'}" ${echo ? 'dir="rtl"' : ''}>
@@ -74,7 +117,7 @@
                     <span class="mdc-list-item__text">
                         ${message}
                         <span class="mdc-list-item__secondary-text">
-                            ${latency ? `Latency: ${latency}ms` : ''}
+                            ${typeof latency === 'number' ? `Latency: ${latency}ms` : ''}
                         </span>
                     </span>
                 </li>
@@ -87,7 +130,8 @@
         window.echoServiceClient = new proto.grpc.web.research.EchoServiceClient(
             'http://' + window.location.hostname + ':9090'
         );
-        document.getElementById('echo').addEventListener('submit', onFormSubmit, false);
+        document.getElementById('echo-button').addEventListener('click', onEchoClick, false);
+        document.getElementById('echo-stream-button').addEventListener('click', onEchoStreamClick, false);
     </script>
 </body>
 </html>

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"time"
 
 	"google.golang.org/grpc/metadata"
 
@@ -54,4 +55,26 @@ func (s *echoService) Echo(ctx context.Context, in *example.EchoRequest) (*examp
 	return &example.EchoResponse{
 		Message: in.Message,
 	}, nil
+}
+
+func (s *echoService) ServerStreamingEcho(in *example.ServerStreamingEchoRequest, stream example.EchoService_ServerStreamingEchoServer) error {
+	md, ok := metadata.FromIncomingContext(stream.Context())
+	if !ok {
+		log.Printf("Failed to retrieve metadata from incoming request")
+		return status.Error(codes.Internal, "Failed to retrieve metadata from incoming request")
+	}
+
+	stream.SendHeader(md)
+
+	for index := 0; index < int(in.GetMessageCount()); index++ {
+		time.Sleep(time.Duration(in.GetMessageInterval()) * time.Millisecond)
+		msg := &example.ServerStreamingEchoResponse{
+			Message: in.GetMessage(),
+		}
+		if err := stream.Send(msg); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

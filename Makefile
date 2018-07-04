@@ -1,8 +1,8 @@
-export GOPATH := ${CURDIR}/backend/go
+export GOPATH := ${CURDIR}/backend-go/go
 
-GRPC_WEB_REPO_PATH := /add/path/here
-GRPC_WEB_PLUGIN_PATH := /add/path/here
-CLOSURE_COMPILER_PATH := /add/path/here
+GRPC_WEB_REPO_PATH := /Users/neilcarpenter/Sites/_misc/grpc-web
+GRPC_WEB_PLUGIN_PATH := /Users/neilcarpenter/Sites/_misc/grpc-web/javascript/net/grpc/web/protoc-gen-grpc-web
+CLOSURE_COMPILER_PATH := /Users/neilcarpenter/lib/closure-compiler/compiler.jar
 
 all: proto compile-js
 
@@ -24,7 +24,7 @@ compile-js:
 		--js $(GRPC_WEB_REPO_PATH)/javascript \
 		--js $(GRPC_WEB_REPO_PATH)/third_party/closure-library \
 		--js $(GRPC_WEB_REPO_PATH)/third_party/grpc/third_party/protobuf/js \
-		--entry_point=goog:proto.grpc.web.research.EchoServiceClient \
+		--entry_point=goog:proto.grpc.web.echo.EchoServiceClient \
 		--dependency_mode=STRICT \
 		--js_output_file ./web/dist/js/compiled.js
 

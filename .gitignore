@@ -1,9 +1,9 @@
 node_modules
 
-backend/go/bin/*
-backend/go/pkg/*
-backend/go/src/*
-!backend/go/src/server
+backend-go/go/bin/*
+backend-go/go/pkg/*
+backend-go/go/src/*
+!backend-go/go/src/server
 *.pb.go
 
 web/src/proto

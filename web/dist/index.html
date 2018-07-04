@@ -44,7 +44,7 @@
         function onFormSubmit(e) {
             e.preventDefault();
 
-            var unaryRequest = new proto.grpc.web.research.EchoRequest();
+            var unaryRequest = new proto.grpc.web.echo.EchoRequest();
             var input = document.getElementById('message');
             var message = input.value;
             input.value = '';
@@ -84,7 +84,7 @@
         }
 
         window.mdc.autoInit();
-        window.echoServiceClient = new proto.grpc.web.research.EchoServiceClient(
+        window.echoServiceClient = new proto.grpc.web.echo.EchoServiceClient(
             'http://' + window.location.hostname + ':9090'
         );
         document.getElementById('echo').addEventListener('submit', onFormSubmit, false);

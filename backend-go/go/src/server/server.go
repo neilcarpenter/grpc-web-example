@@ -13,7 +13,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	example "proto/example"
+	pb "proto/echo"
 )
 
 var (
@@ -28,7 +28,7 @@ func main() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 	gs := grpc.NewServer()
-	example.RegisterEchoServiceServer(gs, &echoService{})
+	pb.RegisterEchoServiceServer(gs, &echoService{})
 
 	log.Printf("starting grpc on :%d\n", *grpcPort)
 
@@ -37,7 +37,7 @@ func main() {
 
 type echoService struct{}
 
-func (s *echoService) Echo(ctx context.Context, in *example.EchoRequest) (*example.EchoResponse, error) {
+func (s *echoService) Echo(ctx context.Context, in *pb.EchoRequest) (*pb.EchoResponse, error) {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
 		log.Printf("Failed to retrieve metadata from incoming request")
@@ -48,10 +48,10 @@ func (s *echoService) Echo(ctx context.Context, in *example.EchoRequest) (*examp
 	grpc.SendHeader(ctx, md)
 
 	if in.Message == "error" {
-		return nil, status.Error(codes.Internal, "Example error response")
+		return nil, status.Error(codes.Internal, "pb error response")
 	}
 
-	return &example.EchoResponse{
+	return &pb.EchoResponse{
 		Message: in.Message,
 	}, nil
 }

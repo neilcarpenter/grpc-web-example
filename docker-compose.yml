@@ -8,10 +8,10 @@ services:
       - ./web/dist:/usr/share/nginx/html
     ports:
       - "8000:80"
-  backend:
-    container_name: backend
+  backend-go:
+    container_name: backend-go
     build:
-      context: backend
+      context: backend-go
     expose:
       - "9091"
   proxy:
@@ -24,4 +24,4 @@ services:
       - "9090:9090"
     links:
       - web
-      - backend
+      - backend-go

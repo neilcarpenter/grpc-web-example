@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package grpc.web.research;
+package grpc.web.echo;
 
 message EchoRequest {
   string message = 1;

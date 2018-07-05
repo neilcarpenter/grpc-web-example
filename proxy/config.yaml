@@ -22,6 +22,8 @@ static_resources:
               routes:
               - match: { prefix: "/grpc.web.echo" }
                 route: { cluster: echo_service }
+              - match: { prefix: "/grpc.web.reverse" }
+                route: { cluster: reverse_service }
               cors:
                 allow_origin:
                 - "*"
@@ -41,3 +43,9 @@ static_resources:
     http2_protocol_options: {}
     lb_policy: round_robin
     hosts: [{ socket_address: { address: backend-go, port_value: 9091 }}]
+  - name: reverse_service
+    connect_timeout: 0.25s
+    type: logical_dns
+    http2_protocol_options: {}
+    lb_policy: round_robin
+    hosts: [{ socket_address: { address: backend-node, port_value: 9092 }}]

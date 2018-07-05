@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package grpc.web.reverse;
+
+message ReverseRequest {
+  string message = 1;
+}
+
+message ReverseResponse {
+  string message = 1;
+}
+
+service ReverseService {
+  rpc Reverse(ReverseRequest) returns (ReverseResponse);
+}

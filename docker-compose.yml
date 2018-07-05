@@ -14,6 +14,14 @@ services:
       context: backend-go
     expose:
       - "9091"
+  backend-node:
+    container_name: backend-node
+    build:
+      context: backend-node
+    volumes:
+      - ./proto:/proto
+    expose:
+      - "9092"
   proxy:
     container_name: proxy
     build:
@@ -25,3 +33,4 @@ services:
     links:
       - web
       - backend-go
+      - backend-node

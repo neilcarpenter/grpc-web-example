@@ -17,9 +17,11 @@ const protoDescriptor = grpc.loadPackageDefinition(packageDefinition);
 const reverseService = protoDescriptor.grpc.web.reverse.ReverseService.service;
 
 const reverse = (call, cb) => {
-    // Copy client metadata to response, this is to ensure gRPC-web filter in
-    // Envoy is applied correctly
-    call.sendMetadata(call.metadata.clone());
+    // Ensure conformity with PROTOCOL-WEB, see
+	// https://github.com/grpc/grpc/blob/master/doc/PROTOCOL-WEB.md#protocol-differences-vs-grpc-over-http2
+    let metaData = new grpc.Metadata();
+    metaData.add('accept', 'application/grpc-web-text');
+    call.sendMetadata(metaData);
 
     if (!call.request.message) {
         cb({

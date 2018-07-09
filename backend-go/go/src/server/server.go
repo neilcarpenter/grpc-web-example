@@ -7,10 +7,9 @@ import (
 	"log"
 	"net"
 
-	"google.golang.org/grpc/metadata"
-
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 
 	pb "proto/echo"
@@ -38,14 +37,9 @@ func main() {
 type echoService struct{}
 
 func (s *echoService) Echo(ctx context.Context, in *pb.EchoRequest) (*pb.EchoResponse, error) {
-	md, ok := metadata.FromIncomingContext(ctx)
-	if !ok {
-		log.Printf("Failed to retrieve metadata from incoming request")
-		return nil, status.Error(codes.Internal, "Failed to retrieve metadata from incoming request")
-	}
-
-	// Copy client metadata to response, this is to ensure gRPC-web filter in Envoy is applied correctly
-	grpc.SendHeader(ctx, md)
+	// Ensure conformity with PROTOCOL-WEB, see
+	// https://github.com/grpc/grpc/blob/master/doc/PROTOCOL-WEB.md#protocol-differences-vs-grpc-over-http2
+	grpc.SendHeader(ctx, metadata.Pairs("accept", "application/grpc-web-text"))
 
 	if in.Message == "error" {
 		return nil, status.Error(codes.Internal, "pb error response")

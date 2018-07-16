@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"time"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -42,10 +43,32 @@ func (s *echoService) Echo(ctx context.Context, in *pb.EchoRequest) (*pb.EchoRes
 	grpc.SendHeader(ctx, metadata.Pairs("accept", "application/grpc-web-text"))
 
 	if in.Message == "error" {
-		return nil, status.Error(codes.Internal, "pb error response")
+		return nil, status.Error(codes.Internal, "Error response")
 	}
 
 	return &pb.EchoResponse{
 		Message: in.Message,
 	}, nil
+}
+
+func (s *echoService) ServerStreamingEcho(in *pb.ServerStreamingEchoRequest, stream pb.EchoService_ServerStreamingEchoServer) error {
+	// Ensure conformity with PROTOCOL-WEB, see
+	// https://github.com/grpc/grpc/blob/master/doc/PROTOCOL-WEB.md#protocol-differences-vs-grpc-over-http2
+	stream.SendHeader(metadata.Pairs("accept", "application/grpc-web-text"))
+
+	if in.Message == "error" {
+		return status.Error(codes.Internal, "Error response #2")
+	}
+
+	for index := 0; index < int(in.GetMessageCount()); index++ {
+		time.Sleep(time.Duration(in.GetMessageInterval()) * time.Millisecond)
+		msg := &pb.ServerStreamingEchoResponse{
+			Message: in.GetMessage(),
+		}
+		if err := stream.Send(msg); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

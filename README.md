@@ -1,9 +1,10 @@
-# gRPC-web example - Echo service
+# gRPC-web example - Echo / Reverse services
 
-Simple demonstration of gRPC-web, consisting of 3 services:
+Simple demonstration of gRPC-web, consisting of 4 services:
 1. Go server implementing Echo gRPC service
-2. Static HTML/JS app implementing Echo gRPC client
-3. Envoy proxy
+2. NodeJS server implementing Reverse gRPC service
+3. Static HTML/JS app implementing Echo / Reverse gRPC clients
+4. Envoy proxy
 
 ## Setup
 

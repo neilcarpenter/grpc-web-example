@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>gRPC-web example - Echo service</title>
+    <title>gRPC-web example - Echo / Reverse services</title>
     <link rel="stylesheet" href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
@@ -14,7 +14,7 @@
             margin: 0 auto;
         }
 
-        #echo .mdc-text-field {
+        .mdc-text-field {
             width: 100%;
         }
 
@@ -25,35 +25,60 @@
         .message[dir="rtl"] {
             text-align: right;
         }
+
+        .mdc-button {
+            margin: 0 5px 5px 0;
+        }
     </style>
 </head>
 <body class="mdc-typography">
-    <h1 class="mdc-typography--headline3">gRPC-web <code>echo</code></h1>
-    <p class="mdc-typography--body1">Enter message to echo, or type "error" to simulate error</p>
-    <form action="#" id="echo">
-        <div class="mdc-text-field" data-mdc-auto-init="MDCTextField">
-            <input type="text" id="message" class="mdc-text-field__input">
-            <label class="mdc-floating-label" for="message">Type message and hit enter</label>
-            <div class="mdc-line-ripple"></div>
-        </div>
-    </form>
+    <h1 class="mdc-typography--headline3">gRPC-web <code>echo</code> / <code>reverse</code></h1>
+    <p class="mdc-typography--body1">Enter message to send, or type "error" to simulate error</p>
+    <div class="mdc-text-field" data-mdc-auto-init="MDCTextField">
+        <input type="text" id="message" class="mdc-text-field__input">
+        <label class="mdc-floating-label" for="message">Type message and click option below</label>
+        <div class="mdc-line-ripple"></div>
+    </div>
+    <div class="mdc-form-field">
+        <button class="mdc-button mdc-button--raised" data-mdc-auto-init="MDCRipple" id="echo-button">
+            <i class="material-icons mdc-button__icon" aria-hidden="true">hearing</i>
+            Echo
+        </button>
+        <button class="mdc-button mdc-button--raised" data-mdc-auto-init="MDCRipple" id="echo-stream-button">
+            <i class="material-icons mdc-button__icon" aria-hidden="true">hearing</i>
+            <i class="material-icons mdc-button__icon" aria-hidden="true">hearing</i>
+            <i class="material-icons mdc-button__icon" aria-hidden="true">hearing</i>
+            Echo stream
+        </button>
+    </div>
+    <div class="mdc-form-field">
+        <button class="mdc-button mdc-button--raised" data-mdc-auto-init="MDCRipple" id="reverse-button">
+            <i class="material-icons mdc-button__icon" aria-hidden="true">swap_horiz</i>
+            Reverse
+        </button>
+        <button class="mdc-button mdc-button--raised" data-mdc-auto-init="MDCRipple" id="reverse-stream-button">
+            <i class="material-icons mdc-button__icon" aria-hidden="true">swap_horiz</i>
+            <i class="material-icons mdc-button__icon" aria-hidden="true">swap_horiz</i>
+            <i class="material-icons mdc-button__icon" aria-hidden="true">swap_horiz</i>
+            Reverse stream
+        </button>
+    </div>
     <ul class="mdc-list mdc-list--two-line" aria-orientation="vertical" id="message-log"></ul>
 
     <script src="js/compiled.js"></script>
     <script>
-        function onFormSubmit(e) {
-            e.preventDefault();
-
-            var unaryRequest = new proto.grpc.web.research.EchoRequest();
+        function onUnaryClick(req, client, method) {
             var input = document.getElementById('message');
             var message = input.value;
             input.value = '';
 
+            if (message === '') return;
+
             addMessage(message);
 
             var start = Date.now();
-            unaryRequest.setMessage(message);
-            window.echoServiceClient.echo(unaryRequest, null, function(err, response) {
+            req.setMessage(message);
+            client[method](req, null, function(err, response) {
                 var latency = Date.now() - start;
                 var message;
                 if (err) {
@@ -62,6 +87,36 @@
                     message = response.getMessage();
                 }
                 addMessage(message, true, latency);
+            });
+        }
+
+        function onStreamClick(req, client, method) {
+            var input = document.getElementById('message');
+            var message = input.value;
+            input.value = '';
+
+            if (message === '') return;
+
+            addMessage(message)
+
+            req.setMessage(message);
+            req.setMessageCount(5);
+            req.setMessageInterval(200);
+            var stream = client[method](req, null);
+            var lastTime = Date.now();
+            stream.on('data', function(response) {
+                var now = Date.now();
+                var latency = now - lastTime;
+                lastTime = now;
+                addMessage(response.getMessage(), true, latency);
+            });
+            stream.on('status', function(status) {
+                var now = Date.now();
+                var latency = now - lastTime;
+                lastTime = now;
+                if (status.code != grpc.web.StatusCode.OK) {
+                    addMessage(`<strong>Error ${status.code}</strong>: ${status.details}`, true, latency);
+                }
             });
         }
 
@@ -74,7 +129,7 @@
                     <span class="mdc-list-item__text">
                         ${message}
                         <span class="mdc-list-item__secondary-text">
-                            ${latency ? `Latency: ${latency}ms` : ''}
+                            ${typeof latency === 'number' ? `Latency: ${latency}ms` : ''}
                         </span>
                     </span>
                 </li>
@@ -84,10 +139,40 @@
         }
 
         window.mdc.autoInit();
-        window.echoServiceClient = new proto.grpc.web.research.EchoServiceClient(
+        window.echoServiceClient = new proto.grpc.web.echo.EchoServiceClient(
             'http://' + window.location.hostname + ':9090'
         );
-        document.getElementById('echo').addEventListener('submit', onFormSubmit, false);
+        window.reverseServiceClient = new proto.grpc.web.reverse.ReverseServiceClient(
+            'http://' + window.location.hostname + ':9090'
+        );
+        document.getElementById('echo-button').addEventListener('click', function() {
+            onUnaryClick(
+                new proto.grpc.web.echo.EchoRequest(),
+                window.echoServiceClient,
+                'echo'
+            );
+        }, false);
+        document.getElementById('reverse-button').addEventListener('click', function () {
+            onUnaryClick(
+                new proto.grpc.web.reverse.ReverseRequest(),
+                window.reverseServiceClient,
+                'reverse'
+            );
+        }, false);
+        document.getElementById('echo-stream-button').addEventListener('click', function() {
+            onStreamClick(
+                new proto.grpc.web.echo.ServerStreamingEchoRequest(),
+                window.echoServiceClient,
+                'serverStreamingEcho'
+            );
+        }, false);
+        document.getElementById('reverse-stream-button').addEventListener('click', function() {
+            onStreamClick(
+                new proto.grpc.web.reverse.ServerStreamingReverseRequest(),
+                window.reverseServiceClient,
+                'serverStreamingReverse'
+            );
+        }, false);
     </script>
 </body>
 </html>

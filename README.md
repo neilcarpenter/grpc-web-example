@@ -11,7 +11,7 @@ Simple demonstration of gRPC-web, consisting of 4 services:
 Ensure you have:
 - [grpc/grpc-web](https://github.com/grpc/grpc-web) repo cloned locally, and followed the [installation instructions](https://github.com/grpc/grpc-web/blob/master/INSTALL.md).
 - Downloaded [closure compiler](https://github.com/google/closure-compiler).
-- Then update relevant references for `GRPC_WEB_REPO_PATH`, `GRPC_WEB_PLUGIN_PATH` and `CLOSURE_COMPILER_PATH` inside `Makefile`.
+- Updated references for `GRPC_WEB_REPO_PATH` (path to grpc/grpc-web repo locally), `GRPC_WEB_PLUGIN_PATH` (path to grpc-web protoc plugin, compiled during the grpc/grpc-web installation steps) and `CLOSURE_COMPILER_PATH` (path to downloaded closure compiler .jar) inside `Makefile`.
 
 ## Run the example
 
